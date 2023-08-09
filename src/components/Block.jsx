@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import Quill from "quill";
 import "quill/dist/quill.bubble.css";
 import "quill/dist/quill.core.css";
-import { Paper, IconButton, Menu, MenuItem } from "@mui/material";
+import { Paper, IconButton, Menu, MenuItem, Box } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { styled } from "@mui/system";
 
@@ -18,7 +18,7 @@ const StyledPaper = styled(Paper)({
   },
 });
 
-const ControlPanel = styled("div")({
+const ControlPanel = styled(Box)({
   position: "absolute",
   top: "0",
   right: "0",
@@ -30,6 +30,7 @@ function Editor({
   index,
   onMoveUp,
   onMoveDown,
+  onRemove,
   isFirst,
   isLast,
   onContentChange,
@@ -61,7 +62,7 @@ function Editor({
       });
 
       if (content) {
-        quillInstance.root.innerHTML = content; // Inicializar con contenido
+        quillInstance.root.innerHTML = content;
       }
       setEditor(quillInstance);
     }
@@ -114,11 +115,19 @@ function Editor({
             >
               Move Down
             </MenuItem>
+            <MenuItem
+              onClick={() => {
+                onRemove(index);
+                handleMenuClose();
+              }}
+            >
+              Remove
+            </MenuItem>
           </Menu>
         </ControlPanel>
       )}
 
-      <div ref={editorRef} />
+      <Box ref={editorRef} />
     </StyledPaper>
   );
 }

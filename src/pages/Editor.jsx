@@ -1,10 +1,11 @@
 import React, { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import Block from "../components/Block";
-import { Typography, Button } from "@mui/material";
+import { Typography, Button, Box } from "@mui/material";
 import { styled } from "@mui/system";
 import AddIcon from "@mui/icons-material/Add";
 
-const GlobalStyles = styled("div")`
+const GlobalStyles = styled(Box)`
   & .ql-tooltip {
     z-index: 1001;
   }
@@ -16,33 +17,45 @@ const StyledTitle = styled(Typography)({
 });
 
 const Editor = () => {
-  const [editors, setEditors] = useState([{ index: 0, value: "" }]);
+  const [editors, setEditors] = useState([]);
 
   const addEditor = () => {
-    setEditors((prevEditors) => [
-      ...prevEditors,
-      { index: prevEditors.length },
-    ]);
+    setEditors((prevEditors) => [...prevEditors, { id: uuidv4() }]);
   };
 
   const onContentChange = (index, content) => {
     setEditors((prevEditors) =>
       prevEditors.map((editor, idx) => {
         if (idx === index) {
-          return { index, value: content };
+          return { ...editor, value: content };
         }
         return editor;
       })
     );
   };
 
-  const moveEditor = (index, direction) => {
+  const moveEditor = (currentIndex, direction) => {
+    // Clone the existing editors array
     const updatedEditors = [...editors];
-    const targetIndex = index + direction;
-    [updatedEditors[index], updatedEditors[targetIndex]] = [
-      updatedEditors[targetIndex],
-      updatedEditors[index],
-    ];
+
+    // Calculate the target index based on the direction
+    const targetIndex = currentIndex + direction;
+
+    // Check that the target index is within bounds
+    if (targetIndex >= 0 && targetIndex < updatedEditors.length) {
+      // Swap the elements at the current and target indexes
+      const tempEditor = updatedEditors[currentIndex];
+      updatedEditors[currentIndex] = updatedEditors[targetIndex];
+      updatedEditors[targetIndex] = tempEditor;
+
+      // Update the state with the rearranged editors
+      setEditors(updatedEditors);
+    }
+  };
+
+  const handleRemove = (index) => {
+    const updatedEditors = [...editors];
+    updatedEditors.splice(index, 1);
     setEditors(updatedEditors);
   };
 
@@ -51,20 +64,21 @@ const Editor = () => {
       <StyledTitle variant="h1">Quill.js + Material-UI</StyledTitle>
       {editors.map((editor, index) => (
         <Block
-          key={editor.index}
+          key={editor.id}
           index={index}
           onMoveUp={() => moveEditor(index, -1)}
           onMoveDown={() => moveEditor(index, 1)}
+          onRemove={() => handleRemove(index)}
           isFirst={index === 0}
           isLast={index === editors.length - 1}
           onContentChange={onContentChange}
         />
       ))}
-      <div style={{ textAlign: "center", margin: "10px" }}>
+      <Box style={{ textAlign: "center", margin: "10px" }}>
         <Button variant="contained" color="primary" onClick={addEditor}>
           <AddIcon />
         </Button>
-      </div>
+      </Box>
     </GlobalStyles>
   );
 };
